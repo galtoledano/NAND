@@ -14,7 +14,7 @@ AT_BIT = '0'
 
 SYMBOL = '@\w*'
 
-COMMENT = '\/\/.*'
+COMMENT = '(.*)(\/\/.*)'
 
 REGEX = "([ADM0]*)((=[A-Z\d+-/!/|/&]*)|(;[A-Z]*))"
 AT_VAL_R = "@[a-zA-Z0-9]*"
@@ -47,8 +47,7 @@ def remove_invalid_syntax(line):
     com = re.compile(COMMENT)
     result = com.match(line)
     if result is not None:
-        s, e = result.span()
-        line = line[:s]
+        line = result.group(1)
     line = line.replace("\n", "")
     line = line.replace(" ", "")
     return line
@@ -90,15 +89,18 @@ def convert_instruction(dest, comp, jump):
 
 def first_loop(f):
     var = re.compile(VAR)
+    counter = 0 # how many vars we added
     for i in range(len(f)):
         result = var.match(f[i])
         if result is not None:
-            new_line = '@' + str(i+1)
+            new_line = str(i - counter) # start from 1 not 0
+            counter += 1
             s = result.string
             new_key = s[1: len(s) - 1]
             d.symbols[new_key] = new_line
             f[i] = new_line
     return f
+
 
 def second_loop(f):
     counter = 16
@@ -107,14 +109,16 @@ def second_loop(f):
         result = s.match(f[i])
         if result is not None:
             res = result.string[1:]
+            if res.isdigit():
+                continue
             if res in d.symbols.keys():
                 f[i] = '@' + str(d.symbols[res])
             else:
                 new_key = res
-                new_val = '@' + str(counter)
-                counter += 1
+                new_val = str(counter)
                 d.symbols[new_key] = new_val
-                f[i] = new_val
+                f[i] = '@' + new_val
+                counter += 1
     return f
 
 
@@ -124,7 +128,7 @@ def main(path):
     file = open(path, 'r')
     name = os.path.basename(path)
     name = name.replace(".asm", ".hack")
-    parse_file = open(path + END_NAME_FILE, 'w')
+    parse_file = open(name, 'w')
     line = file.readline()
     f = []
     while line:
