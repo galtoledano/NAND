@@ -2,23 +2,35 @@ import dicts as d
 import os
 import re
 
+"""the end of the convert file name"""
 END_NAME_FILE = '.hack'
 
+"""empty string"""
 NONE_STR = ''
 
+"""the index to start the convert from"""
 START_NUM = 2
 
+"""the maximal num of bis"""
 NUM_OF_BITS = 15
 
+"""the first bit of at commend"""
 AT_BIT = '0'
 
+"""the regex af variabels"""
 SYMBOL = '@\w*'
 
+"""the regex of comments"""
 COMMENT = '(.*)(\/\/.*)'
 
+"""the regex of instructions"""
 REGEX = "([ADM0]*)((=[A-Z\d+-/!/|/&]*)|(;[A-Z]*))"
+
+"""the regex of at var"""
 AT_VAL_R = "@[a-zA-Z0-9]*"
-VAR = '\(\w*\)'
+
+"""the regex of labels"""
+VAR = '\(.*\w*\)'
 
 
 def parse_line(line, pattern, at_val):
@@ -44,6 +56,12 @@ def parse_line(line, pattern, at_val):
 
 
 def remove_invalid_syntax(line):
+    """
+    A function that remove invalid letter from the line (comments, line break
+    etc)
+    :param line: the line to check
+    :return: the line without the irrelevant letter
+    """
     com = re.compile(COMMENT)
     result = com.match(line)
     if result is not None:
@@ -88,6 +106,12 @@ def convert_instruction(dest, comp, jump):
     return res
 
 def first_loop(f):
+    """
+    the first look on the file. Remove labels line and save them in the symbols
+    dictionary.
+    :param f: the file we looking at
+    :return: the file without those lines
+    """
     var = re.compile(VAR)
     counter = 0 # how many vars we added
     for i in range(len(f)):
@@ -103,6 +127,11 @@ def first_loop(f):
 
 
 def second_loop(f):
+    """
+    the second look at the file. Replace the variables to memory address
+    :param f: the file to looking at
+    :return: the new file
+    """
     counter = 16
     s = re.compile(SYMBOL)
     for i in range(len(f)):
