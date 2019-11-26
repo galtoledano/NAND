@@ -1,3 +1,5 @@
+import sys
+
 import dicts as d
 import os
 import re
@@ -31,6 +33,11 @@ AT_VAL_R = "@[a-zA-Z0-9]*"
 
 """the regex of labels"""
 VAR = '\(.*\w*\)'
+REGEX = "([ADM0><]*)((=[A-Z\d+-/!/|/&><]*)|(;[A-Z]*))"
+
+AT_VAL_R = "@[a-zA-Z0-9.]*"
+
+VAR = '\(\w*\)'
 
 
 def parse_line(line, pattern, at_val):
@@ -92,7 +99,6 @@ def convert_instruction(dest, comp, jump):
     :param jump: the jump instruction part
     :return: the instruction in bits
     """
-    res = '111'
     if jump is None:
         jump = NONE_STR
     elif jump[0] == ';':
@@ -102,8 +108,8 @@ def convert_instruction(dest, comp, jump):
         dest = NONE_STR
     if comp[0] == '=':
         comp = comp[1:]
-    res = res + d.comp[comp] + d.dest[dest] + d.jump[jump]
-    return res
+    return d.comp[comp] + d.dest[dest] + d.jump[jump]
+
 
 def first_loop(f):
     """
@@ -113,11 +119,11 @@ def first_loop(f):
     :return: the file without those lines
     """
     var = re.compile(VAR)
-    counter = 0 # how many vars we added
+    counter = 0  # how many vars we added
     for i in range(len(f)):
         result = var.match(f[i])
         if result is not None:
-            new_line = str(i - counter) # start from 1 not 0
+            new_line = str(i - counter)  # start from 1 not 0
             counter += 1
             s = result.string
             new_key = s[1: len(s) - 1]
@@ -151,13 +157,12 @@ def second_loop(f):
     return f
 
 
-def main(path):
-    pattern1 = re.compile(REGEX)
-    at_val = re.compile(AT_VAL_R)
+def single_file(at_val, path, pattern1):
     file = open(path, 'r')
+    dir = os.path.dirname(path)
     name = os.path.basename(path)
     name = name.replace(".asm", ".hack")
-    parse_file = open(name, 'w')
+    parse_file = open(dir+"\\" + name, 'w')
     line = file.readline()
     f = []
     while line:
@@ -177,6 +182,21 @@ def main(path):
     file.close()
     parse_file.close()
 
+
+def main():
+    if len(sys.argv) != 2:
+        print('Usagae: ', sys.argv[0], '<input file or directory>')
+    path = sys.argv[1]
+    pattern1 = re.compile(REGEX)
+    at_val = re.compile(AT_VAL_R)
+    if os.path.isdir(path):
+        for file in os.listdir(path):
+            if file.endswith(".asm"):
+                single_file(at_val, path+ os.path.sep + file, pattern1)
+    else:
+        single_file(at_val, path, pattern1)
+
+
 # pattern1 = re.compile(REGEX)
 # at_val = re.compile(AT_VAL_R)
 # print(parse_line('@3', pattern1, at_val))
@@ -186,4 +206,6 @@ def main(path):
     #read the file - if the line if empty delete. mybe parse the line? comments
     # write the atribute in the new file
     #colse files
-main("Max.asm")
+main()
+
+
