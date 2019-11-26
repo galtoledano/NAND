@@ -157,12 +157,15 @@ def second_loop(f):
     return f
 
 
-def single_file(at_val, path, pattern1):
+def single_file(at_val, path, pattern1, singleFile = True):
     file = open(path, 'r')
     dir = os.path.dirname(path)
     name = os.path.basename(path)
     name = name.replace(".asm", ".hack")
-    parse_file = open(dir+"\\" + name, 'w')
+    if singleFile:
+        parse_file = open(name, 'w')
+    else:
+        parse_file = open(dir+"\\" + name, 'w')
     line = file.readline()
     f = []
     while line:
@@ -192,7 +195,7 @@ def main():
     if os.path.isdir(path):
         for file in os.listdir(path):
             if file.endswith(".asm"):
-                single_file(at_val, path+ os.path.sep + file, pattern1)
+                single_file(at_val, path + os.path.sep + file, pattern1, False)
     else:
         single_file(at_val, path, pattern1)
 
