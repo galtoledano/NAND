@@ -198,8 +198,6 @@ def main():
                 single_file(at_val, path + os.path.sep + file, pattern1, False)
     else:
         single_file(at_val, path, pattern1)
-
-
 # pattern1 = re.compile(REGEX)
 # at_val = re.compile(AT_VAL_R)
 # print(parse_line('@3', pattern1, at_val))
